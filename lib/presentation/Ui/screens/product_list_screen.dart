@@ -41,7 +41,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
               child: Text(categoryListByIdController.errorMessage.toString()),
             );
           }
-          if (categoryListByIdController.productList == []) {
+          if (categoryListByIdController.productList.isEmpty) {
             return const Center(
               child: Text("No Data"),
             );

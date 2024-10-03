@@ -1,7 +1,6 @@
 import 'package:e_commerce/data/models/product_model.dart';
 import 'package:e_commerce/presentation/Ui/screens/product_details_screen.dart';
 import 'package:e_commerce/presentation/Ui/utils/app_colors.dart';
-import 'package:e_commerce/presentation/Ui/utils/assets_path.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -19,7 +18,7 @@ class SingleProductCard extends StatelessWidget {
       },
       child: SizedBox(
         height: 180,
-        width: 200,
+        width: 135,
         child: Card(
           elevation: 3,
           child: Column(
@@ -27,17 +26,15 @@ class SingleProductCard extends StatelessWidget {
             children: [
               Container(
                 height: 110,
-                width: 200,
+                width: 135,
                 decoration: BoxDecoration(
                   color: AppColors.themeColor.withOpacity(0.2),
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(8),
                     topRight: Radius.circular(8),
                   ),
-                  image: const DecorationImage(
-                      image: AssetImage(
-                        AssetsPath.dummyProductImage,
-                      ),
+                  image: DecorationImage(
+                      image: NetworkImage(productModel.image!),
                       fit: BoxFit.scaleDown),
                 ),
               ),

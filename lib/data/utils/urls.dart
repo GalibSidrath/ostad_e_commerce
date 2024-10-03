@@ -7,5 +7,5 @@ class Urls {
       '$_baseUrl/ListProductByRemark/$remark';
 
   static String categoryListById({required int id}) =>
-      '$_baseUrl/ListProductByRemark/$id';
+      '$_baseUrl/ListProductByCategory/$id';
 }

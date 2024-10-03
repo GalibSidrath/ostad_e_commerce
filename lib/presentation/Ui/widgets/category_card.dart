@@ -20,21 +20,23 @@ class CategoryCard extends StatelessWidget {
       },
       child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-                color: AppColors.themeColor.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(10)),
-            child: const Icon(
-              Icons.computer,
-              size: 48,
-              color: AppColors.themeColor,
-            ),
+          Expanded(
+            child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                    color: AppColors.themeColor.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10)),
+                child: Image.network(
+                  categoryModel.categoryImg!,
+                  height: 70,
+                  width: 70,
+                  fit: BoxFit.scaleDown,
+                )),
           ),
           const SizedBox(height: 4),
           Text(
             categoryModel.categoryName ?? '',
-            style: TextStyle(color: AppColors.themeColor),
+            style: const TextStyle(color: AppColors.themeColor),
           )
         ],
       ),
