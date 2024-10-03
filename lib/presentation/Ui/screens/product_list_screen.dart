@@ -41,6 +41,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
               child: Text(categoryListByIdController.errorMessage.toString()),
             );
           }
+          if (categoryListByIdController.productList == []) {
+            return const Center(
+              child: Text("No Data"),
+            );
+          }
           return GridView.builder(
               itemCount: categoryListByIdController.productList.length,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
