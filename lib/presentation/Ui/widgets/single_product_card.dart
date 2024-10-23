@@ -14,7 +14,9 @@ class SingleProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Get.to(() => const ProductDetailsScreen());
+        Get.to(() => ProductDetailsScreen(
+              productId: productModel.id!,
+            ));
       },
       child: SizedBox(
         height: 180,
@@ -35,7 +37,7 @@ class SingleProductCard extends StatelessWidget {
                   ),
                   image: DecorationImage(
                       image: NetworkImage(productModel.image!),
-                      fit: BoxFit.scaleDown),
+                      fit: BoxFit.cover),
                 ),
               ),
               Padding(

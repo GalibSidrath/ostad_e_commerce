@@ -1,18 +1,23 @@
 import 'dart:convert';
 
 import 'package:e_commerce/data/models/network_response.dart';
+import 'package:e_commerce/presentation/Ui/screens/email_verification_screen.dart';
+import 'package:e_commerce/presentation/state_holders/auth_controller.dart';
+import 'package:get/get.dart' as getx;
 import 'package:http/http.dart';
 import 'package:logger/logger.dart';
 
 class NetworkCaller {
   final Logger logger;
+  final AuthController authController;
 
-  NetworkCaller({required this.logger});
-  Future<NetworkResponse> getRequest({required String url}) async {
+  NetworkCaller({required this.logger, required this.authController});
+  Future<NetworkResponse> getRequest(
+      {required String url, String? token}) async {
     Uri uri = Uri.parse(url);
-    _requestLog(url, {}, {}, '');
+    _requestLog(url, {}, {}, AuthController.accessToken ?? '');
     final Response response = await get(uri, headers: {
-      'token': '',
+      'token': '${token ?? AuthController.accessToken}',
     });
 
     try {
@@ -27,6 +32,9 @@ class NetworkCaller {
       } else {
         _responseLog(
             url, response.statusCode, response.body, response.headers, false);
+        if (response.statusCode == 401) {
+          _moveToLogin();
+        }
         return NetworkResponse(
           statusCode: response.statusCode,
           isSuccess: false,
@@ -45,10 +53,11 @@ class NetworkCaller {
   Future<NetworkResponse> postRequest(
       {required String url, Map<String, dynamic>? body}) async {
     Uri uri = Uri.parse(url);
-    _requestLog(url, {}, body ?? {}, '');
-    final Response response = await post(uri,
-        body: jsonEncode(body),
-        headers: {'token': '', 'content-type': 'application/json'});
+    _requestLog(url, {}, body ?? {}, AuthController.accessToken ?? '');
+    final Response response = await post(uri, body: jsonEncode(body), headers: {
+      'token': '${AuthController.accessToken}',
+      'content-type': 'application/json'
+    });
 
     try {
       if (response.statusCode == 200) {
@@ -62,6 +71,9 @@ class NetworkCaller {
       } else {
         _responseLog(
             url, response.statusCode, response.body, response.headers, false);
+        if (response.statusCode == 401) {
+          _moveToLogin();
+        }
         return NetworkResponse(
           statusCode: response.statusCode,
           isSuccess: false,
@@ -102,5 +114,10 @@ class NetworkCaller {
     } else {
       logger.e(message);
     }
+  }
+
+  Future<void> _moveToLogin() async {
+    await authController.clearUserData();
+    getx.Get.to(const EmailVerificationScreen());
   }
 }

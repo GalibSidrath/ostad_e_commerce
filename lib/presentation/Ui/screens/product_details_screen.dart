@@ -1,51 +1,86 @@
+import 'package:e_commerce/data/models/single_product_details_model.dart';
+import 'package:e_commerce/presentation/Ui/screens/email_verification_screen.dart';
+import 'package:e_commerce/presentation/Ui/screens/review_screen.dart';
 import 'package:e_commerce/presentation/Ui/utils/app_colors.dart';
-import 'package:e_commerce/presentation/Ui/widgets/color_picker.dart';
+import 'package:e_commerce/presentation/Ui/utils/tost_message.dart';
+import 'package:e_commerce/presentation/Ui/widgets/loding_indicator.dart';
 import 'package:e_commerce/presentation/Ui/widgets/product_slider.dart';
 import 'package:e_commerce/presentation/Ui/widgets/size_picker.dart';
+import 'package:e_commerce/presentation/state_holders/add_to_cart_controller.dart';
+import 'package:e_commerce/presentation/state_holders/auth_controller.dart';
+import 'package:e_commerce/presentation/state_holders/product_details_by_id_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:item_count_number_button/item_count_number_button.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
-  const ProductDetailsScreen({super.key});
+  const ProductDetailsScreen({super.key, required this.productId});
+  final int productId;
 
   @override
   State<ProductDetailsScreen> createState() => _ProductDetailsScreenState();
 }
 
 class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
+  String _selectedColor = '';
+  String _selectedSize = '';
+  int _quantity = 1;
+  @override
+  void initState() {
+    super.initState();
+    Get.find<ProductDetailsByIdController>()
+        .getProductDetailsById(id: widget.productId);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Product Details'),
       ),
-      body: Column(
-        children: [
-          Expanded(child: _buildProductDetails()),
-          _buildPriceAndAddToCartSection()
-        ],
-      ),
+      body: GetBuilder<ProductDetailsByIdController>(
+          builder: (productDetailsByIdController) {
+        if (productDetailsByIdController.inProgress) {
+          return const LoadingIndicator();
+        }
+        return Column(
+          children: [
+            Expanded(
+                child: _buildProductDetails(
+                    productDetailsByIdController.singleProductDetails!)),
+            _buildPriceAndAddToCartSection(
+                productDetailsByIdController.singleProductDetails!)
+          ],
+        );
+      }),
     );
   }
 
-  Widget _buildProductDetails() {
+  Widget _buildProductDetails(SingleProductDetailsModel productDetails) {
     return SingleChildScrollView(
       child: Column(
         children: [
-          const ProductSlider(),
+          ProductSlider(
+            sliderImages: [
+              productDetails.img1!,
+              productDetails.img2!,
+              productDetails.img3!,
+              productDetails.img4!,
+            ],
+          ),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _productNameSection(),
+                _productNameSection(productDetails),
                 const SizedBox(height: 4),
-                _productReviewSection(),
-                _colorPickerSection(),
+                _productReviewSection(productDetails),
+                _colorPickerSection(productDetails),
                 const SizedBox(height: 16),
-                _sizePickerSection(),
+                _sizePickerSection(productDetails),
                 const SizedBox(height: 16),
-                _productDescriptionSection(),
+                _productDescriptionSection(productDetails),
               ],
             ),
           ),
@@ -54,7 +89,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     );
   }
 
-  Widget _productDescriptionSection() {
+  Widget _productDescriptionSection(SingleProductDetailsModel productDetails) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -63,51 +98,65 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 8),
-        const Text(
-          '''Item Count Number Button is a Flutter package that allows you to easily implement a customizable item count widget with increment and decrement buttons. This widget is particularly useful in scenarios where you need to manage the quantity of items, such as in a shopping cart or inventory management system''',
-          style: TextStyle(color: Colors.black45),
+        Text(
+          productDetails.des!,
+          style: const TextStyle(color: Colors.black45),
         ),
       ],
     );
   }
 
-  Widget _sizePickerSection() {
+  Widget _sizePickerSection(SingleProductDetailsModel productDetails) {
+    _selectedSize = productDetails.size!.split(',').first;
     return SizePicker(
-      sizes: const ['S', 'M', 'L', 'XL', 'XXL'],
-      onSizeSelected: (String selectedSize) {},
+      sizes: productDetails.size!.split(','),
+      onSizeSelected: (String selectedSize) {
+        _selectedSize = selectedSize;
+      },
     );
   }
 
-  Widget _colorPickerSection() {
-    return ColorPicker(
-      colors: const [
-        Colors.red,
-        Colors.green,
-        Colors.yellow,
-        Colors.black,
-      ],
-      onColorSelected: (color) {},
+  Widget _colorPickerSection(SingleProductDetailsModel productDetails) {
+    // return ColorPicker(
+    //   colors: const [
+    //     Colors.red,
+    //     Colors.green,
+    //     Colors.yellow,
+    //     Colors.black,
+    //   ],
+    //   onColorSelected: (color) {},
+    // );
+    _selectedColor = productDetails.color!.split(',').first;
+    return SizePicker(
+      sizes: productDetails.color!.split(','),
+      onSizeSelected: (String selectedColor) {
+        _selectedColor = selectedColor;
+      },
     );
   }
 
-  Widget _productReviewSection() {
+  Widget _productReviewSection(SingleProductDetailsModel productDetails) {
     return Wrap(
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        const Wrap(
+        Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Icon(Icons.star, color: Colors.amber),
+            const Icon(Icons.star, color: Colors.amber),
             Text(
-              '3',
-              style:
-                  TextStyle(fontWeight: FontWeight.w500, color: Colors.black54),
+              productDetails.product!.star.toString(),
+              style: const TextStyle(
+                  fontWeight: FontWeight.w500, color: Colors.black54),
             ),
           ],
         ),
         const SizedBox(width: 8),
         TextButton(
-          onPressed: () {},
+          onPressed: () {
+            Get.to(() => ReviewScreen(
+                  productId: widget.productId,
+                ));
+          },
           child: const Text(
             'Reviews',
             style: TextStyle(
@@ -131,29 +180,33 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     );
   }
 
-  Widget _productNameSection() {
+  Widget _productNameSection(SingleProductDetailsModel productDetails) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: Text(
-            'Nike shoe 2024 latest model - New year special deal',
+            productDetails.product!.shortDes!,
             style: Theme.of(context).textTheme.titleMedium,
           ),
         ),
         ItemCount(
-          initialValue: 1,
+          initialValue: _quantity,
           minValue: 1,
           maxValue: 20,
           decimalPlaces: 0,
           color: AppColors.themeColor,
-          onChanged: (value) {},
+          onChanged: (value) {
+            _quantity = value.toInt();
+            setState(() {});
+          },
         ),
       ],
     );
   }
 
-  Widget _buildPriceAndAddToCartSection() {
+  Widget _buildPriceAndAddToCartSection(
+      SingleProductDetailsModel productDetails) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -165,13 +218,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Price'),
+              const Text('Price'),
               Text(
-                '\$100',
-                style: TextStyle(
+                '\$${productDetails.product!.price}',
+                style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: AppColors.themeColor),
@@ -179,11 +232,41 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             ],
           ),
           SizedBox(
-              width: 140,
-              child: ElevatedButton(
-                  onPressed: () {}, child: const Text('Add To Cart')))
+            width: 140,
+            child:
+                GetBuilder<AddToCartController>(builder: (addToCartController) {
+              return Visibility(
+                visible: !addToCartController.inProgress,
+                replacement: const LoadingIndicator(),
+                child: ElevatedButton(
+                  onPressed: _onTapAddToCart,
+                  child: const Text('Add To Cart'),
+                ),
+              );
+            }),
+          )
         ],
       ),
     );
+  }
+
+  void _onTapAddToCart() async {
+    bool isLoggedIn = Get.find<AuthController>().isLoggedInUser();
+    if (isLoggedIn) {
+      final bool addToCartResult = await Get.find<AddToCartController>()
+          .addToCart(
+              productId: widget.productId,
+              color: _selectedColor,
+              size: _selectedSize,
+              quantity: _quantity);
+      if (addToCartResult) {
+        toastMessage(context, 'Added To Cart Successfully!');
+      } else {
+        toastMessage(
+            context, Get.find<AddToCartController>().errorMessage!, true);
+      }
+    } else {
+      Get.to(() => const EmailVerificationScreen());
+    }
   }
 }

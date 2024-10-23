@@ -1,5 +1,8 @@
 import 'package:e_commerce/presentation/Ui/screens/otp_verification_screen.dart';
+import 'package:e_commerce/presentation/Ui/utils/tost_message.dart';
 import 'package:e_commerce/presentation/Ui/widgets/app_logo_widget.dart';
+import 'package:e_commerce/presentation/Ui/widgets/loding_indicator.dart';
+import 'package:e_commerce/presentation/state_holders/verify_email_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -12,7 +15,10 @@ class EmailVerificationScreen extends StatefulWidget {
 }
 
 class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
-  TextEditingController _emailTEController = TextEditingController();
+  final VerifyEmailController verifyEmailController =
+      Get.find<VerifyEmailController>();
+  final TextEditingController _emailTEController = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,14 +43,28 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                   ?.copyWith(color: Colors.black54),
             ),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _emailTEController,
-              decoration: const InputDecoration(hintText: 'Email'),
+            Form(
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              key: _formKey,
+              child: TextFormField(
+                controller: _emailTEController,
+                decoration: const InputDecoration(hintText: 'Email'),
+                validator: (String? value) {
+                  if (value?.isEmpty ?? true) {
+                    return 'Enter an email';
+                  }
+                  return null;
+                },
+              ),
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _onTapNextButton,
-              child: const Text('Next'),
+            Visibility(
+              visible: !verifyEmailController.inProgress,
+              replacement: const LoadingIndicator(),
+              child: ElevatedButton(
+                onPressed: _onTapNextButton,
+                child: const Text('Next'),
+              ),
             ),
           ],
         ),
@@ -52,8 +72,21 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     ));
   }
 
-  void _onTapNextButton() {
-    Get.to(() => const OtpVerificationScreen());
+  void _onTapNextButton() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    bool result = await verifyEmailController.verifyUserEmail(
+        email: _emailTEController.text.trim());
+    if (result) {
+      Get.to(() => OtpVerificationScreen(
+            email: _emailTEController.text.trim(),
+          ));
+    } else {
+      if (mounted) {
+        toastMessage(context, verifyEmailController.errorMessage!, false);
+      }
+    }
   }
 
   @override

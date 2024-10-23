@@ -1,5 +1,6 @@
 import 'package:e_commerce/presentation/Ui/screens/main_bottom_nav_bar.dart';
 import 'package:e_commerce/presentation/Ui/widgets/app_logo_widget.dart';
+import 'package:e_commerce/presentation/state_holders/auth_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -12,6 +13,7 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   void _moveToNextScreen() async {
+    await Get.find<AuthController>().getAccessToken();
     await Future.delayed(const Duration(seconds: 2));
     Get.off(() => const MainBottomNavBar());
   }
@@ -24,19 +26,19 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Spacer(),
-              const AppLogoWidget(),
-              const Spacer(),
-              const CircularProgressIndicator(),
-              const SizedBox(height: 16),
-              const Text(
+              Spacer(),
+              AppLogoWidget(),
+              Spacer(),
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text(
                 'version 1.0.0',
                 style: TextStyle(color: Colors.grey),
               ),

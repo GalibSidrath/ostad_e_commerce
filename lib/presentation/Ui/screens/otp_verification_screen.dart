@@ -1,19 +1,30 @@
 import 'package:e_commerce/presentation/Ui/screens/complete_profile_screen.dart';
+import 'package:e_commerce/presentation/Ui/screens/main_bottom_nav_bar.dart';
 import 'package:e_commerce/presentation/Ui/utils/app_colors.dart';
+import 'package:e_commerce/presentation/Ui/utils/tost_message.dart';
 import 'package:e_commerce/presentation/Ui/widgets/app_logo_widget.dart';
+import 'package:e_commerce/presentation/Ui/widgets/loding_indicator.dart';
+import 'package:e_commerce/presentation/state_holders/otp_verification_controller.dart';
+import 'package:e_commerce/presentation/state_holders/read_profile_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
-  const OtpVerificationScreen({super.key});
+  const OtpVerificationScreen({super.key, required this.email});
+  final String email;
 
   @override
   State<OtpVerificationScreen> createState() => _OtpVerificationScreenState();
 }
 
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
-  TextEditingController _otpTEController = TextEditingController();
+  final OtpVerificationController _otpVerificationController =
+      Get.find<OtpVerificationController>();
+  final ReadProfileController _readProfileController =
+      Get.find<ReadProfileController>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _otpTEController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,26 +49,36 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     ?.copyWith(color: Colors.black54),
               ),
               const SizedBox(height: 24),
-              PinCodeTextField(
-                length: 6,
-                animationType: AnimationType.fade,
-                keyboardType: TextInputType.number,
-                pinTheme: PinTheme(
-                  shape: PinCodeFieldShape.box,
-                  borderRadius: BorderRadius.circular(5),
-                  fieldHeight: 50,
-                  fieldWidth: 40,
-                  activeFillColor: Colors.white,
-                  selectedFillColor: Colors.white,
-                  selectedColor: Colors.green,
-                  inactiveFillColor: Colors.white,
-                  inactiveColor: AppColors.themeColor,
+              Form(
+                key: _formKey,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                child: PinCodeTextField(
+                  validator: (String? value) {
+                    if (value?.isEmpty ?? true) {
+                      return 'Enter 6 digit OTP send to your email';
+                    }
+                    return null;
+                  },
+                  length: 6,
+                  animationType: AnimationType.fade,
+                  keyboardType: TextInputType.number,
+                  pinTheme: PinTheme(
+                    shape: PinCodeFieldShape.box,
+                    borderRadius: BorderRadius.circular(5),
+                    fieldHeight: 50,
+                    fieldWidth: 40,
+                    activeFillColor: Colors.white,
+                    selectedFillColor: Colors.white,
+                    selectedColor: Colors.green,
+                    inactiveFillColor: Colors.white,
+                    inactiveColor: AppColors.themeColor,
+                  ),
+                  animationDuration: const Duration(milliseconds: 300),
+                  backgroundColor: Colors.transparent,
+                  enableActiveFill: true,
+                  controller: _otpTEController,
+                  appContext: context,
                 ),
-                animationDuration: const Duration(milliseconds: 300),
-                backgroundColor: Colors.transparent,
-                enableActiveFill: true,
-                controller: _otpTEController,
-                appContext: context,
               ),
               const SizedBox(height: 24),
               ElevatedButton(
@@ -80,7 +101,12 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   ],
                 ),
               ),
-              TextButton(onPressed: () {}, child: const Text('Resend Code')),
+              Visibility(
+                  visible: !_otpVerificationController.inProgress,
+                  replacement: const LoadingIndicator(),
+                  child: TextButton(
+                      onPressed: _onTapNextButton,
+                      child: const Text('Resend Code'))),
             ],
           ),
         ),
@@ -88,8 +114,31 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     );
   }
 
-  void _onTapNextButton() {
-    Get.to(() => const CompleteProfileScreen());
+  void _onTapNextButton() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    bool result = await _otpVerificationController.verifyOTP(
+        email: widget.email, otp: _otpTEController.text);
+    if (result) {
+      final bool readProfileResult = await _readProfileController
+          .getProfileDetails(_otpVerificationController.accessToken);
+      if (readProfileResult) {
+        if (_readProfileController.isProfileCompleted) {
+          Get.offAll(() => const MainBottomNavBar());
+        } else {
+          Get.off(() => const CompleteProfileScreen());
+        }
+      } else {
+        if (mounted) {
+          toastMessage(context, _readProfileController.errorMessage!, true);
+        }
+      }
+    } else {
+      if (mounted) {
+        toastMessage(context, _otpVerificationController.errorMessage!, true);
+      }
+    }
   }
 
   @override

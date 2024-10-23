@@ -41,15 +41,21 @@ class _CaterogyListScreenState extends State<CaterogyListScreen> {
               return Center(
                   child: Text(categoryListController.errorMessage.toString()));
             }
-            return GridView.builder(
-              itemCount: categoryListController.categoryList.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4, childAspectRatio: 0.75),
-              itemBuilder: (context, index) {
-                return CategoryCard(
-                  categoryModel: categoryListController.categoryList[index],
-                );
-              },
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: GridView.builder(
+                itemCount: categoryListController.categoryList.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    mainAxisSpacing: 5,
+                    crossAxisSpacing: 5,
+                    childAspectRatio: 0.75),
+                itemBuilder: (context, index) {
+                  return CategoryCard(
+                    categoryModel: categoryListController.categoryList[index],
+                  );
+                },
+              ),
             );
           }),
         ),

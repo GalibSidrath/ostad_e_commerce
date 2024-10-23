@@ -1,9 +1,12 @@
 import 'package:e_commerce/data/models/category_model.dart';
 import 'package:e_commerce/data/models/product_model.dart';
+import 'package:e_commerce/presentation/Ui/screens/email_verification_screen.dart';
 import 'package:e_commerce/presentation/Ui/screens/product_list_screen.dart';
+import 'package:e_commerce/presentation/Ui/screens/profile_screen.dart';
 import 'package:e_commerce/presentation/Ui/utils/assets_path.dart';
 import 'package:e_commerce/presentation/Ui/widgets/loding_indicator.dart';
 import 'package:e_commerce/presentation/Ui/widgets/widgets.dart';
+import 'package:e_commerce/presentation/state_holders/auth_controller.dart';
 import 'package:e_commerce/presentation/state_holders/bottom_nav_bar_controller.dart';
 import 'package:e_commerce/presentation/state_holders/category_list_controller.dart';
 import 'package:e_commerce/presentation/state_holders/new_product_list_controller.dart';
@@ -130,7 +133,14 @@ class _HomeScreenState extends State<HomeScreen> {
         replacement: const LoadingIndicator(),
         child: Column(
           children: [
-            SectionHeader(onTap: () {}, title: 'Special'),
+            SectionHeader(
+                onTap: () {
+                  Get.to(() => ProductListScreen(
+                        categoryModel:
+                            specialProductController.productList[0].category!,
+                      ));
+                },
+                title: 'Special'),
             SizedBox(
               height: 180,
               child:
@@ -153,7 +163,14 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (newProductListController) {
       return Column(
         children: [
-          SectionHeader(onTap: () {}, title: 'New'),
+          SectionHeader(
+              onTap: () {
+                Get.to(() => ProductListScreen(
+                      categoryModel:
+                          newProductListController.productList[0].category!,
+                    ));
+              },
+              title: 'New'),
           SizedBox(
             height: 180,
             child: Visibility(
@@ -181,7 +198,14 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       actions: [
         AppIconLogoButton(
-          onTap: () {},
+          onTap: () {
+            bool isLoggedIn = Get.find<AuthController>().isLoggedInUser();
+            if (isLoggedIn) {
+              Get.to(() => const ProfileScreen());
+            } else {
+              Get.to(() => const EmailVerificationScreen());
+            }
+          },
           iconData: Icons.person,
         ),
         const SizedBox(

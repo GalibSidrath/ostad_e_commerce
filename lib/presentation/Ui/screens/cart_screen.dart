@@ -1,6 +1,8 @@
 import 'package:e_commerce/presentation/Ui/utils/app_colors.dart';
+import 'package:e_commerce/presentation/Ui/widgets/loding_indicator.dart';
 import 'package:e_commerce/presentation/Ui/widgets/product_card.dart';
 import 'package:e_commerce/presentation/state_holders/bottom_nav_bar_controller.dart';
+import 'package:e_commerce/presentation/state_holders/cart_list_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -12,6 +14,16 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
+  final CartListController _cartListController = Get.find<CartListController>();
+  late int _totalPrice;
+
+  @override
+  void initState() {
+    super.initState();
+    _cartListController.getCartList();
+    _calculateTotalPrice();
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -29,24 +41,54 @@ class _CartScreenState extends State<CartScreen> {
               },
               icon: const Icon(Icons.arrow_back_ios_new)),
         ),
-        body: Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: 20,
-                itemBuilder: (context, index) {
-                  return const ProductCard();
-                },
-              ),
-            ),
-            _buildPriceAndAddToCartSection()
-          ],
+        body: GetBuilder<CartListController>(
+          builder: (cartListController) {
+            if (cartListController.inProgress) {
+              return const LoadingIndicator();
+            }
+            if (cartListController.cartList.isEmpty) {
+              return const Center(
+                child: Text('Nothing on the List'),
+              );
+            }
+            return Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: cartListController.cartList.length,
+                    itemBuilder: (context, index) {
+                      _calculateTotalPrice();
+                      return ProductCard(
+                        cartModel: cartListController.cartList[index],
+                        onQuantityChanged: (newQuantity) {
+                          _cartListController.updateCartItemQuantity(
+                              index, newQuantity);
+                        },
+                      );
+                    },
+                  ),
+                ),
+                _buildPriceAndAddToCartSection(_totalPrice),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildPriceAndAddToCartSection() {
+  void _calculateTotalPrice() {
+    _totalPrice = 0;
+    for (var cartItem in _cartListController.cartList) {
+      _totalPrice += int.parse(cartItem.price!) * int.parse(cartItem.qty!);
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {});
+    });
+  }
+
+  Widget _buildPriceAndAddToCartSection(int totalPrice) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -58,23 +100,28 @@ class _CartScreenState extends State<CartScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Price'),
+              const Text('Total Price'),
               Text(
-                '\$100',
-                style: TextStyle(
+                '\$$totalPrice',
+                style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: AppColors.themeColor),
-              )
+              ),
             ],
           ),
           SizedBox(
-              width: 140,
-              child: ElevatedButton(
-                  onPressed: () {}, child: const Text('Add To Cart')))
+            width: 140,
+            child: ElevatedButton(
+              onPressed: () {
+                // Handle checkout functionality here
+              },
+              child: const Text('CHECKOUT'),
+            ),
+          )
         ],
       ),
     );

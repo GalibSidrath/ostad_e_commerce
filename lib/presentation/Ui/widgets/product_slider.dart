@@ -1,10 +1,10 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:e_commerce/presentation/Ui/utils/app_colors.dart';
-import 'package:e_commerce/presentation/Ui/utils/assets_path.dart';
 import 'package:flutter/material.dart';
 
 class ProductSlider extends StatefulWidget {
-  const ProductSlider({super.key});
+  const ProductSlider({super.key, required this.sliderImages});
+  final List<String> sliderImages;
 
   @override
   State<ProductSlider> createState() => _ProductSliderState();
@@ -19,19 +19,21 @@ class _ProductSliderState extends State<ProductSlider> {
         Positioned(
           child: CarouselSlider(
             options: CarouselOptions(
+                viewportFraction: 1,
                 height: 180.0,
                 autoPlay: true,
                 onPageChanged: (index, reason) {
                   _selectedIndex.value = index;
                 }),
-            items: [1, 2, 3, 4, 5].map((i) {
+            items: widget.sliderImages.map((i) {
               return Builder(
                 builder: (BuildContext context) {
                   return Container(
-                      width: MediaQuery.of(context).size.width,
-                      decoration: BoxDecoration(color: Colors.grey.shade200),
-                      child: Center(
-                          child: Image.asset(AssetsPath.dummyProductImage)));
+                    width: MediaQuery.of(context).size.width,
+                    decoration: BoxDecoration(
+                        image: DecorationImage(
+                            image: NetworkImage(i), fit: BoxFit.fill)),
+                  );
                 },
               );
             }).toList(),
@@ -47,7 +49,7 @@ class _ProductSliderState extends State<ProductSlider> {
               return Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  for (int i = 0; i < 5; i++)
+                  for (int i = 0; i < widget.sliderImages.length; i++)
                     Container(
                       height: 12,
                       width: 12,
