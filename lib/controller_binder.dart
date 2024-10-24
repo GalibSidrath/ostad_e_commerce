@@ -6,13 +6,16 @@ import 'package:e_commerce/presentation/state_holders/cart_list_controller.dart'
 import 'package:e_commerce/presentation/state_holders/category_list_by_id_controller.dart';
 import 'package:e_commerce/presentation/state_holders/category_list_controller.dart';
 import 'package:e_commerce/presentation/state_holders/create_profile_controller.dart';
+import 'package:e_commerce/presentation/state_holders/create_wishlist_controller.dart';
 import 'package:e_commerce/presentation/state_holders/logout_controller.dart';
 import 'package:e_commerce/presentation/state_holders/new_product_list_controller.dart';
 import 'package:e_commerce/presentation/state_holders/otp_verification_controller.dart';
 import 'package:e_commerce/presentation/state_holders/popular_product_list_controller.dart';
 import 'package:e_commerce/presentation/state_holders/product_details_by_id_controller.dart';
+import 'package:e_commerce/presentation/state_holders/product_wishlist_controller.dart';
 import 'package:e_commerce/presentation/state_holders/profile_details_controller.dart';
 import 'package:e_commerce/presentation/state_holders/read_profile_controller.dart';
+import 'package:e_commerce/presentation/state_holders/remove_wishlist_controller.dart';
 import 'package:e_commerce/presentation/state_holders/review_controller.dart';
 import 'package:e_commerce/presentation/state_holders/review_post_controller.dart';
 import 'package:e_commerce/presentation/state_holders/slider_list_controller.dart';
@@ -48,5 +51,8 @@ class ControllerBinder extends Bindings {
     Get.put(ReviewPostController());
     Get.put(ProfileDetailsController());
     Get.put(LogoutController());
+    Get.put(ProductWishlistController());
+    Get.put(RemoveWishlistController());
+    Get.put(CreateWishlistController());
   }
 }

@@ -8,6 +8,7 @@ import 'package:e_commerce/presentation/Ui/widgets/product_slider.dart';
 import 'package:e_commerce/presentation/Ui/widgets/size_picker.dart';
 import 'package:e_commerce/presentation/state_holders/add_to_cart_controller.dart';
 import 'package:e_commerce/presentation/state_holders/auth_controller.dart';
+import 'package:e_commerce/presentation/state_holders/create_wishlist_controller.dart';
 import 'package:e_commerce/presentation/state_holders/product_details_by_id_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -15,6 +16,7 @@ import 'package:item_count_number_button/item_count_number_button.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   const ProductDetailsScreen({super.key, required this.productId});
+
   final int productId;
 
   @override
@@ -25,6 +27,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   String _selectedColor = '';
   String _selectedSize = '';
   int _quantity = 1;
+
   @override
   void initState() {
     super.initState();
@@ -167,13 +170,32 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         Card(
           color: AppColors.themeColor,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-          child: const Padding(
+          child: Padding(
             padding: EdgeInsets.all(4.0),
-            child: Icon(
-              Icons.favorite_outline_rounded,
-              size: 16,
-              color: Colors.white,
-            ),
+            child: GetBuilder<CreateWishlistController>(
+                builder: (createWishListController) {
+              return InkWell(
+                onTap: () async {
+                  bool isLoggedIn = Get.find<AuthController>().isLoggedInUser();
+                  if (isLoggedIn) {
+                    bool res = await Get.find<CreateWishlistController>()
+                        .createWishListProduct(widget.productId);
+                    if (res) {
+                      toastMessage(context, 'Added to wishlist');
+                    } else {
+                      toastMessage(context, 'Failed to add into wishlist');
+                    }
+                  } else {
+                    Get.to(() => const EmailVerificationScreen());
+                  }
+                },
+                child: Icon(
+                  Icons.favorite_outline_rounded,
+                  size: 16,
+                  color: Colors.white,
+                ),
+              );
+            }),
           ),
         )
       ],

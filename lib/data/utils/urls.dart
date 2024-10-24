@@ -9,6 +9,7 @@ class Urls {
   static const String createProfileUrl = '$_baseUrl/CreateProfile';
   static const String createProductReviewUrl = '$_baseUrl/CreateProductReview';
   static const String logoutUrl = '$_baseUrl/logout';
+  static const String productWishListUrl = '$_baseUrl/ProductWishList';
 
   static String productListByRemark({required String remark}) =>
       '$_baseUrl/ListProductByRemark/$remark';
@@ -26,4 +27,10 @@ class Urls {
       '$_baseUrl/VerifyLogin/$email/$otp';
   static String getReviewList({required int productId}) =>
       '$_baseUrl/ListReviewByProduct/$productId';
+
+  static String removeWishListUrl({required int productId}) =>
+      '$_baseUrl/RemoveWishList/$productId';
+
+  static String createWishListUrl({required int productId}) =>
+      '$_baseUrl/CreateWishList/$productId';
 }
